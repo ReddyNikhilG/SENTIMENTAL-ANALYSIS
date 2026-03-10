@@ -141,7 +141,7 @@ Organizations use sentiment analysis to analyze large volumes of user-generated 
 
 ## 👨‍💻 Author
 
-**Nikhil Reddy**
+**Reddy Nikhil**
 
 B.Tech Computer Science (AI & ML) Student
 
