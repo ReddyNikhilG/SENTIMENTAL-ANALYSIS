@@ -1,0 +1,19 @@
+# Maven
+target/
+
+# Logs
+*.log
+
+# Compiled files
+*.class
+
+# Java archive files
+*.jar
+*.war
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
