@@ -1,326 +1,331 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
-
-<title>AI Sentiment Dashboard</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<style>
-
-body{
-font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-background:
-radial-gradient(circle at 15% 20%, rgba(99,102,241,0.35), transparent 35%),
-radial-gradient(circle at 85% 15%, rgba(34,211,238,0.30), transparent 38%),
-radial-gradient(circle at 80% 80%, rgba(236,72,153,0.25), transparent 42%),
-linear-gradient(135deg,#050816 0%,#0b1024 55%,#12173a 100%);
-color:#f8fafc;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-padding:30px 16px;
-position:relative;
-overflow-x:hidden;
-margin:0;
-}
-
-body::before,
-body::after{
-content:"";
-position:fixed;
-width:420px;
-height:420px;
-border-radius:50%;
-filter:blur(70px);
-z-index:-1;
-pointer-events:none;
-}
-
-body::before{
-top:-120px;
-left:-120px;
-background:rgba(56,189,248,0.28);
-}
-
-body::after{
-bottom:-140px;
-right:-110px;
-background:rgba(129,140,248,0.30);
-}
-
-.container{
-background:rgba(15,23,42,0.72);
-border:1px solid rgba(148,163,184,0.18);
-backdrop-filter:blur(12px);
--webkit-backdrop-filter:blur(12px);
-padding:40px;
-border-radius:18px;
-width:750px;
-max-width:100%;
-box-shadow:0 30px 70px rgba(2,6,23,0.6);
-}
-
-h1{
-text-align:center;
-margin-bottom:20px;
-}
-
-textarea{
-width:100%;
-height:120px;
-border-radius:10px;
-border:1px solid rgba(148,163,184,0.35);
-background:rgba(15,23,42,0.55);
-color:#e2e8f0;
-padding:12px;
-font-size:16px;
-}
-
-textarea:focus{
-outline:none;
-border-color:#38bdf8;
-box-shadow:0 0 0 3px rgba(56,189,248,0.25);
-}
-
-button{
-margin-top:15px;
-padding:12px 25px;
-border:none;
-border-radius:999px;
-background:linear-gradient(90deg,#0ea5e9,#6366f1);
-color:white;
-font-size:16px;
-cursor:pointer;
-transition:0.3s;
-}
-
-button:hover{
-transform:translateY(-1px) scale(1.03);
-box-shadow:0 10px 25px rgba(14,165,233,0.4);
-}
-
-.result{
-margin-top:20px;
-font-size:22px;
-text-align:center;
-}
-
-.meter{
-height:20px;
-background:rgba(30,41,59,0.7);
-border-radius:10px;
-overflow:hidden;
-margin-top:10px;
-}
-
-.meter-fill{
-height:100%;
-background:linear-gradient(90deg,#ef4444,#facc15,#22c55e);
-width:0%;
-transition:1s;
-}
-
-.history{
-margin-top:20px;
-}
-
-table{
-width:100%;
-margin-top:10px;
-border-collapse:collapse;
-}
-
-td,th{
-border-bottom:1px solid rgba(148,163,184,0.22);
-padding:8px;
-}
-
-canvas{
-margin-top:20px;
-}
-
-.live{
-color:#60a5fa;
-margin-top:10px;
-text-align:center;
-}
-
-@media (max-width: 768px){
-	.container{
-		padding:24px;
-		border-radius:14px;
-	}
-
-	h1{
-		font-size:1.5rem;
-	}
-
-	#wordcloud{
-		width:100%;
-		height:180px;
-	}
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-
 <body>
+<div class="page-shell">
+    <section class="hero">
+        <h1>Sentiment Studio</h1>
+        <p>Analyze text instantly with a clean workflow, live feedback, and export-ready insights.</p>
+    </section>
 
-<div class="container">
+    <section class="dashboard">
+        <div class="card">
+            <form method="post" action="/analyze" id="analyzeForm">
+                <div class="input-head">
+                    <strong>Text to Analyze</strong>
+                    <span class="char-counter" id="charCounter">0 / 5000</span>
+                </div>
 
-<h1>AI Sentiment Analyzer</h1>
+                <textarea id="textInput"
+                          name="text"
+                          maxlength="5000"
+                          placeholder="Paste feedback, comments, reviews, or messages here..."
+                          th:text="${currentText}"></textarea>
 
-<form method="post" action="/analyze">
+                <div class="quick-tags">
+                    <button type="button" class="quick-tag" onclick="insertSample('The product quality is excellent and support was very helpful.')">Positive sample</button>
+                    <button type="button" class="quick-tag" onclick="insertSample('The app keeps crashing and the experience is frustrating.')">Negative sample</button>
+                    <button type="button" class="quick-tag" onclick="insertSample('The service is okay, but there is room for improvement.')">Neutral sample</button>
+                </div>
 
-<textarea id="textInput"
-name="text"
-placeholder="Enter text here..."
-onkeyup="liveAnalyze()"></textarea>
+                <div class="action-row">
+                    <button type="submit" class="btn btn-primary">Analyze Sentiment</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearInput()">Clear</button>
+                    <button type="button" class="btn btn-secondary" onclick="downloadReport()">Download PDF</button>
+                    <button type="button" class="btn btn-secondary" onclick="downloadHistoryCsv()">Export CSV</button>
+                </div>
+            </form>
 
-<p id="liveSentiment" class="live"></p>
+            <p class="live" id="liveSentiment">Live Sentiment: waiting for input...</p>
+            <p class="error" th:if="${error}" th:text="${error}"></p>
 
-<br>
+            <div class="result-grid">
+                <div class="kpi">
+                    <div class="kpi-label">Current Sentiment</div>
+                    <div class="kpi-value" id="resultSentiment" th:text="${sentiment} ?: 'Neutral'">Neutral</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label">Score (0-4)</div>
+                    <div class="kpi-value" id="resultScore" th:text="${score} ?: 2">2</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label">Mood Emoji</div>
+                    <div class="kpi-value" id="resultEmoji" th:text="${emoji} ?: '😐'">😐</div>
+                </div>
+                <div class="kpi">
+                    <div class="kpi-label">Text Length</div>
+                    <div class="kpi-value" id="textLength">0</div>
+                </div>
+            </div>
 
-<button>Analyze Sentiment</button>
+            <div class="result-line">
+                <div id="sentimentBadge" class="badge badge-neutral">Neutral</div>
+            </div>
 
-</form>
+            <div class="meter">
+                <div class="meter-fill" id="meter"></div>
+            </div>
+        </div>
 
-<p th:if="${error}" th:text="${error}" style="color:#fca5a5; margin-top:12px; text-align:center;"></p>
+        <div class="side-stack">
+            <div class="card">
+                <strong>Sentiment Score Chart</strong>
+                <canvas id="chart" height="160"></canvas>
+            </div>
 
-<div class="result">
+            <div class="card">
+                <strong>Keyword Cloud</strong>
+                <canvas id="wordcloud" width="380" height="180"></canvas>
+            </div>
+        </div>
+    </section>
 
-<p th:text="${emoji}"></p>
-<p th:text="${sentiment}"></p>
+    <section class="card" style="margin-top: 16px;">
+        <div class="history-tools">
+            <strong>Recent Analyses</strong>
+            <input type="text" id="historySearch" placeholder="Search text or sentiment..." oninput="filterHistory()">
+        </div>
 
-</div>
-
-<div class="meter">
-<div class="meter-fill" id="meter"></div>
-</div>
-
-<canvas id="chart"></canvas>
-
-<canvas id="wordcloud" width="600" height="200"></canvas>
-
-<br>
-
-<button onclick="downloadReport()">Download Report</button>
-
-<div class="history">
-
-<h3>Sentiment History</h3>
-
-<table>
-
-<tr>
-<th>Text</th>
-<th>Sentiment</th>
-</tr>
-
-<tr th:each="item : ${history}">
-<td th:text="${item.text}"></td>
-<td th:text="${item.sentiment}"></td>
-</tr>
-
-</table>
-
-</div>
-
+        <div class="table-wrap">
+            <table id="historyTable">
+                <thead>
+                <tr>
+                    <th>Text</th>
+                    <th>Sentiment</th>
+                    <th>Score</th>
+                    <th>Time</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${history}">
+                    <td th:text="${item.text}"></td>
+                    <td>
+                        <span th:text="${item.emoji}"></span>
+                        <span th:text="${item.sentiment}"></span>
+                    </td>
+                    <td th:text="${item.score}"></td>
+                    <td th:text="${item.createdAt}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 
 <script th:inline="javascript">
+let score = Number(/*[[${score}]]*/ 2);
+let chartInstance = null;
+let liveTimer = null;
 
-var score = /*[[${score}]]*/ 0;
+const textInput = document.getElementById("textInput");
+const charCounter = document.getElementById("charCounter");
+const textLength = document.getElementById("textLength");
+const liveSentiment = document.getElementById("liveSentiment");
+const resultSentiment = document.getElementById("resultSentiment");
+const resultScore = document.getElementById("resultScore");
+const resultEmoji = document.getElementById("resultEmoji");
+const badge = document.getElementById("sentimentBadge");
 
-if(score != null){
-
-document.getElementById("meter").style.width = (score*20)+"%";
-
-var ctx = document.getElementById("chart");
-
-new Chart(ctx,{
-type:'bar',
-data:{
-labels:['Sentiment Score'],
-datasets:[{
-label:'Score',
-data:[score],
-backgroundColor:'#3b82f6'
-}]
+function updateCounter() {
+    const len = textInput.value.length;
+    charCounter.textContent = len + " / 5000";
+    textLength.textContent = len;
 }
+
+function updateMeter(value) {
+    const clamped = Math.max(0, Math.min(4, Number(value)));
+    document.getElementById("meter").style.width = (clamped * 25) + "%";
+}
+
+function updateBadge(sentiment) {
+    badge.className = "badge";
+    if (sentiment.includes("Positive")) {
+        badge.classList.add("badge-positive");
+    } else if (sentiment.includes("Negative")) {
+        badge.classList.add("badge-negative");
+    } else {
+        badge.classList.add("badge-neutral");
+    }
+    badge.textContent = sentiment;
+}
+
+function renderChart(value) {
+    const ctx = document.getElementById("chart").getContext("2d");
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: ["Sentiment Score"],
+            datasets: [{
+                label: "Score",
+                data: [value],
+                borderRadius: 10,
+                backgroundColor: ["#38bdf8"]
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    min: 0,
+                    max: 4,
+                    ticks: { stepSize: 1, color: "#cbd5e1" },
+                    grid: { color: "rgba(148, 163, 184, 0.15)" }
+                },
+                x: {
+                    ticks: { color: "#cbd5e1" },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function collectWords() {
+    const rows = document.querySelectorAll("#historyTable tbody tr td:first-child");
+    const text = Array.from(rows).map(r => r.textContent).join(" ").toLowerCase();
+    const tokens = text.match(/[a-z]+/g) || [];
+    const stop = new Set(["the", "is", "a", "an", "and", "to", "for", "of", "it", "this", "that", "was", "with", "but"]);
+    const counts = {};
+
+    tokens.forEach(word => {
+        if (word.length < 3 || stop.has(word)) return;
+        counts[word] = (counts[word] || 0) + 1;
+    });
+
+    const list = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 30)
+        .map(([word, count]) => [word, count * 8]);
+
+    return list.length ? list : [ ["sentiment", 18], ["analysis", 14], ["insight", 12] ];
+}
+
+function renderWordCloud() {
+    WordCloud(document.getElementById("wordcloud"), {
+        list: collectWords(),
+        gridSize: 10,
+        weightFactor: 1,
+        color: () => ["#7dd3fc", "#c4b5fd", "#fda4af", "#86efac"][Math.floor(Math.random() * 4)],
+        backgroundColor: "rgba(0,0,0,0)",
+        rotateRatio: 0.25
+    });
+}
+
+function liveAnalyze() {
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(() => {
+        const text = textInput.value.trim();
+        if (text.length < 3) {
+            liveSentiment.textContent = "Live Sentiment: type at least 3 characters...";
+            return;
+        }
+
+        fetch("/live?text=" + encodeURIComponent(text))
+            .then(res => res.json())
+            .then(data => {
+                const sentiment = data.sentiment || "Neutral";
+                const scoreVal = Number(data.score || 2);
+                const emoji = data.emoji || "😐";
+
+                liveSentiment.textContent = "Live Sentiment: " + emoji + " " + sentiment + " (" + scoreVal + "/4)";
+                resultSentiment.textContent = sentiment;
+                resultScore.textContent = scoreVal;
+                resultEmoji.textContent = emoji;
+                updateBadge(sentiment);
+                updateMeter(scoreVal);
+                renderChart(scoreVal);
+            })
+            .catch(() => {
+                liveSentiment.textContent = "Live Sentiment: temporarily unavailable";
+            });
+    }, 300);
+}
+
+function insertSample(sample) {
+    textInput.value = sample;
+    updateCounter();
+    liveAnalyze();
+}
+
+function clearInput() {
+    textInput.value = "";
+    updateCounter();
+    liveSentiment.textContent = "Live Sentiment: waiting for input...";
+}
+
+function filterHistory() {
+    const query = document.getElementById("historySearch").value.toLowerCase();
+    const rows = document.querySelectorAll("#historyTable tbody tr");
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(query) ? "" : "none";
+    });
+}
+
+function downloadHistoryCsv() {
+    const rows = Array.from(document.querySelectorAll("#historyTable tr"));
+    const csv = rows.map(row => {
+        const cols = Array.from(row.querySelectorAll("th,td")).map(col => {
+            const v = col.innerText.replace(/\n/g, " ").trim().replace(/"/g, '""');
+            return '"' + v + '"';
+        });
+        return cols.join(",");
+    }).join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "sentiment-history.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+function downloadReport() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const text = textInput.value || "No text provided";
+    const sentiment = resultSentiment.textContent;
+    const scoreText = resultScore.textContent;
+    const emoji = resultEmoji.textContent;
+
+    doc.setFontSize(16);
+    doc.text("Sentiment Studio Report", 20, 20);
+    doc.setFontSize(11);
+    doc.text("Text:", 20, 35);
+    doc.text(doc.splitTextToSize(text, 170), 20, 42);
+    doc.text("Sentiment: " + emoji + " " + sentiment, 20, 85);
+    doc.text("Score: " + scoreText + " / 4", 20, 92);
+    doc.save("sentiment-report.pdf");
+}
+
+textInput.addEventListener("input", () => {
+    updateCounter();
+    liveAnalyze();
 });
 
-}
-
+updateCounter();
+updateMeter(score);
+updateBadge(resultSentiment.textContent || "Neutral");
+renderChart(score);
+renderWordCloud();
 </script>
-
-<script>
-
-function liveAnalyze(){
-
-var text = document.getElementById("textInput").value;
-
-if(text.length < 3) return;
-
-fetch("/live?text=" + encodeURIComponent(text))
-.then(res => res.json())
-.then(data => {
-
-document.getElementById("liveSentiment").innerText =
-"Live Sentiment: " + data.sentiment;
-
-});
-
-}
-
-</script>
-
-<script>
-
-var words = [
-["happy",20],
-["good",15],
-["excellent",10],
-["bad",12],
-["sad",8],
-["love",18],
-["hate",9]
-];
-
-WordCloud(document.getElementById("wordcloud"),{
-list: words
-});
-
-</script>
-
-<script>
-
-function downloadReport(){
-
-const { jsPDF } = window.jspdf;
-
-var doc = new jsPDF();
-
-var text = document.getElementById("textInput").value;
-var sentiment = document.querySelector(".result").innerText;
-
-doc.text("Sentiment Analysis Report",20,20);
-doc.text("Text:",20,40);
-doc.text(text,20,50);
-doc.text("Sentiment Result:",20,80);
-doc.text(sentiment,20,90);
-
-doc.save("sentiment-report.pdf");
-
-}
-
-</script>
-
 </body>
 </html>
