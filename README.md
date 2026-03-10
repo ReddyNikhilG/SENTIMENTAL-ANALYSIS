@@ -103,7 +103,7 @@ Or run the **App.java** file directly from your IDE.
 Once the server starts, open your browser and go to:
 
 ```
-http://localhost:8080
+https://sentimental-analysis-r4br.onrender.com
 ```
 
 Enter a sentence and the system will predict the sentiment.
