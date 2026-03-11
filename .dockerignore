@@ -1,0 +1,13 @@
+target/
+.git/
+.gitignore
+.vscode/
+.idea/
+*.md
+*.log
+*.class
+*.jar
+*.war
+mysql-connector-j-9.0.0.jar
+classpath
+project
