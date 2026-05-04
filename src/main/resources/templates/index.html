@@ -14,111 +14,156 @@
 </head>
 <body>
 <div class="page-shell">
-    <section class="hero">
-        <h1>Sentiment Studio</h1>
-        <p>Analyze text instantly with a clean workflow, live feedback, and export-ready insights.</p>
+    <section class="hero hero-surface">
+        <div class="hero-copy">
+            <div class="eyebrow">AI sentiment intelligence</div>
+            <h1>Sentiment Studio</h1>
+            <p>Ultra-premium sentiment analysis with live feedback, export tools, history tracking, and transparent NLP model details.</p>
+            <div class="hero-badges">
+                <span class="hero-badge">Live sentiment</span>
+                <span class="hero-badge">PDF + CSV export</span>
+                <span class="hero-badge">History tracking</span>
+            </div>
+        </div>
+
+        <div class="hero-panel">
+            <div class="glass-stat">
+                <span>Current</span>
+                <strong id="resultSentiment" th:text="${sentiment} ?: 'Neutral'">Neutral</strong>
+            </div>
+            <div class="glass-stat">
+                <span>Score</span>
+                <strong id="resultScore" th:text="${score} ?: 2">2</strong>
+            </div>
+            <div class="glass-stat">
+                <span>Emotion</span>
+                <strong id="resultEmoji" th:text="${emoji} ?: '😐'">😐</strong>
+            </div>
+            <div class="glass-stat">
+                <span>Confidence</span>
+                <strong id="resultConfidence" th:text="${confidenceText} ?: '0%'">0%</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="model-strip">
+        <div class="model-card">
+            <div class="section-kicker">NLP model</div>
+            <h2 th:text="${modelName}">DistilBERT Sentiment Classifier</h2>
+            <p th:text="${modelDescription}">A locally loaded transformer sentiment model fine-tuned with PyTorch. It predicts positive and negative probabilities, with a neutral label inferred when the scores are close together.</p>
+            <div class="tech-chip-row">
+                <span class="tech-chip" th:text="${modelTech}">cardiffnlp/twitter-roberta-base-sentiment-latest</span>
+                <span class="tech-chip">Binary classifier</span>
+                <span class="tech-chip">Transformer inference</span>
+            </div>
+        </div>
+        <div class="model-card model-accent">
+            <div class="section-kicker">How it works</div>
+            <p>The model sends the text to a DistilBERT sentiment classifier, reads the class probabilities, and derives a final sentiment score from the transformer output.</p>
+            <div class="meter meter-large">
+                <div class="meter-fill" id="meter"></div>
+            </div>
+            <p class="live live-soft" id="liveSentiment">Live Sentiment: waiting for input...</p>
+        </div>
     </section>
 
     <section class="dashboard">
-        <div class="card">
-            <form method="post" action="/analyze" id="analyzeForm">
-                <div class="input-head">
-                    <strong>Text to Analyze</strong>
-                    <span class="char-counter" id="charCounter">0 / 5000</span>
+        <div class="main-column">
+            <div class="card card-large">
+                <form method="post" action="/analyze" id="analyzeForm">
+                    <div class="input-head">
+                        <div>
+                            <div class="section-kicker">Input</div>
+                            <strong>Text to Analyze</strong>
+                        </div>
+                        <span class="char-counter" id="charCounter">0 / 5000</span>
+                    </div>
+
+                    <textarea id="textInput"
+                              name="text"
+                              maxlength="5000"
+                              placeholder="Paste feedback, comments, reviews, or messages here..."
+                              th:text="${currentText}"></textarea>
+
+                    <div class="quick-tags">
+                        <button type="button" class="quick-tag" onclick="insertSample('The product quality is excellent and support was very helpful.')">Positive sample</button>
+                        <button type="button" class="quick-tag" onclick="insertSample('The app keeps crashing and the experience is frustrating.')">Negative sample</button>
+                        <button type="button" class="quick-tag" onclick="insertSample('The service is okay, but there is room for improvement.')">Neutral sample</button>
+                    </div>
+
+                    <div class="action-row">
+                        <button type="submit" class="btn btn-primary">Analyze Sentiment</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearInput()">Clear</button>
+                        <button type="button" class="btn btn-secondary" onclick="downloadReport()">Download PDF</button>
+                        <button type="button" class="btn btn-secondary" onclick="downloadHistoryCsv()">Export CSV</button>
+                    </div>
+                </form>
+
+                <p class="error" th:if="${error}" th:text="${error}"></p>
+
+                <div class="result-grid">
+                    <div class="kpi">
+                        <div class="kpi-label">Text Length</div>
+                        <div class="kpi-value" id="textLength">0</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="kpi-label">Confidence</div>
+                        <div class="kpi-value" id="resultConfidenceCard" th:text="${confidenceText} ?: '0%'">0%</div>
+                    </div>
                 </div>
 
-                <textarea id="textInput"
-                          name="text"
-                          maxlength="5000"
-                          placeholder="Paste feedback, comments, reviews, or messages here..."
-                          th:text="${currentText}"></textarea>
-
-                <div class="quick-tags">
-                    <button type="button" class="quick-tag" onclick="insertSample('The product quality is excellent and support was very helpful.')">Positive sample</button>
-                    <button type="button" class="quick-tag" onclick="insertSample('The app keeps crashing and the experience is frustrating.')">Negative sample</button>
-                    <button type="button" class="quick-tag" onclick="insertSample('The service is okay, but there is room for improvement.')">Neutral sample</button>
-                </div>
-
-                <div class="action-row">
-                    <button type="submit" class="btn btn-primary">Analyze Sentiment</button>
-                    <button type="button" class="btn btn-secondary" onclick="clearInput()">Clear</button>
-                    <button type="button" class="btn btn-secondary" onclick="downloadReport()">Download PDF</button>
-                    <button type="button" class="btn btn-secondary" onclick="downloadHistoryCsv()">Export CSV</button>
-                </div>
-            </form>
-
-            <p class="live" id="liveSentiment">Live Sentiment: waiting for input...</p>
-            <p class="error" th:if="${error}" th:text="${error}"></p>
-
-            <div class="result-grid">
-                <div class="kpi">
-                    <div class="kpi-label">Current Sentiment</div>
-                    <div class="kpi-value" id="resultSentiment" th:text="${sentiment} ?: 'Neutral'">Neutral</div>
-                </div>
-                <div class="kpi">
-                    <div class="kpi-label">Score (0-4)</div>
-                    <div class="kpi-value" id="resultScore" th:text="${score} ?: 2">2</div>
-                </div>
-                <div class="kpi">
-                    <div class="kpi-label">Mood Emoji</div>
-                    <div class="kpi-value" id="resultEmoji" th:text="${emoji} ?: '😐'">😐</div>
-                </div>
-                <div class="kpi">
-                    <div class="kpi-label">Text Length</div>
-                    <div class="kpi-value" id="textLength">0</div>
+                <div class="result-line">
+                    <div id="sentimentBadge" class="badge badge-neutral">Neutral</div>
                 </div>
             </div>
 
-            <div class="result-line">
-                <div id="sentimentBadge" class="badge badge-neutral">Neutral</div>
-            </div>
+            <div class="card card-large history-card">
+                <div class="history-tools">
+                    <div>
+                        <div class="section-kicker">Timeline</div>
+                        <strong>Recent Analyses</strong>
+                    </div>
+                    <input type="text" id="historySearch" placeholder="Search text or sentiment..." oninput="filterHistory()">
+                </div>
 
-            <div class="meter">
-                <div class="meter-fill" id="meter"></div>
+                <div class="table-wrap premium-table">
+                    <table id="historyTable">
+                        <thead>
+                        <tr>
+                            <th>Text</th>
+                            <th>Sentiment</th>
+                            <th>Score</th>
+                            <th>Time</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${history}">
+                            <td th:text="${item.text}"></td>
+                            <td>
+                                <span th:text="${item.emoji}"></span>
+                                <span th:text="${item.sentiment}"></span>
+                            </td>
+                            <td th:text="${item.score}"></td>
+                            <td th:text="${item.createdAt}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <div class="side-stack">
-            <div class="card">
+            <div class="card card-large chart-card">
+                <div class="section-kicker">Insight engine</div>
                 <strong>Sentiment Score Chart</strong>
                 <canvas id="chart" height="160"></canvas>
             </div>
 
-            <div class="card">
+            <div class="card card-large chart-card">
+                <div class="section-kicker">Language focus</div>
                 <strong>Keyword Cloud</strong>
                 <canvas id="wordcloud" width="380" height="180"></canvas>
             </div>
-        </div>
-    </section>
-
-    <section class="card" style="margin-top: 16px;">
-        <div class="history-tools">
-            <strong>Recent Analyses</strong>
-            <input type="text" id="historySearch" placeholder="Search text or sentiment..." oninput="filterHistory()">
-        </div>
-
-        <div class="table-wrap">
-            <table id="historyTable">
-                <thead>
-                <tr>
-                    <th>Text</th>
-                    <th>Sentiment</th>
-                    <th>Score</th>
-                    <th>Time</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="item : ${history}">
-                    <td th:text="${item.text}"></td>
-                    <td>
-                        <span th:text="${item.emoji}"></span>
-                        <span th:text="${item.sentiment}"></span>
-                    </td>
-                    <td th:text="${item.score}"></td>
-                    <td th:text="${item.createdAt}"></td>
-                </tr>
-                </tbody>
-            </table>
         </div>
     </section>
 </div>
@@ -135,6 +180,8 @@ const liveSentiment = document.getElementById("liveSentiment");
 const resultSentiment = document.getElementById("resultSentiment");
 const resultScore = document.getElementById("resultScore");
 const resultEmoji = document.getElementById("resultEmoji");
+const resultConfidence = document.getElementById("resultConfidence");
+const resultConfidenceCard = document.getElementById("resultConfidenceCard");
 const badge = document.getElementById("sentimentBadge");
 
 function updateCounter() {
@@ -241,11 +288,14 @@ function liveAnalyze() {
                 const sentiment = data.sentiment || "Neutral";
                 const scoreVal = Number(data.score || 2);
                 const emoji = data.emoji || "😐";
+                const confidenceText = data.confidenceText || "0%";
 
                 liveSentiment.textContent = "Live Sentiment: " + emoji + " " + sentiment + " (" + scoreVal + "/4)";
                 resultSentiment.textContent = sentiment;
                 resultScore.textContent = scoreVal;
                 resultEmoji.textContent = emoji;
+                resultConfidence.textContent = confidenceText;
+                resultConfidenceCard.textContent = confidenceText;
                 updateBadge(sentiment);
                 updateMeter(scoreVal);
                 renderChart(scoreVal);
@@ -253,7 +303,7 @@ function liveAnalyze() {
             .catch(() => {
                 liveSentiment.textContent = "Live Sentiment: temporarily unavailable";
             });
-    }, 300);
+    }, 900);
 }
 
 function insertSample(sample) {
@@ -319,11 +369,16 @@ function downloadReport() {
 textInput.addEventListener("input", () => {
     updateCounter();
     liveAnalyze();
+    renderWordCloud();
+});
+
+document.getElementById("analyzeForm").addEventListener("submit", () => {
+    updateCounter();
 });
 
 updateCounter();
 updateMeter(score);
-updateBadge(resultSentiment.textContent || "Neutral");
+updateBadge(resultSentiment.textContent);
 renderChart(score);
 renderWordCloud();
 </script>

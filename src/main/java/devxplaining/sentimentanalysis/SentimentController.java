@@ -23,13 +23,24 @@ public class SentimentController {
         this.service = service;
     }
 
+    private void addSharedModelAttributes(Model model) {
+        model.addAttribute("modelName", service.getModelName());
+        model.addAttribute("modelDescription", service.getModelDescription());
+        model.addAttribute("modelTech", service.getModelTech());
+    }
+
 
     // Homepage
     @GetMapping("/")
     public String home(Model model){
 
+        addSharedModelAttributes(model);
         model.addAttribute("history", history);
         model.addAttribute("currentText", "");
+        model.addAttribute("sentiment", "Neutral");
+        model.addAttribute("score", 2);
+        model.addAttribute("emoji", "😐");
+        model.addAttribute("confidenceText", "0%");
 
         return "index";
     }
@@ -38,6 +49,8 @@ public class SentimentController {
     // Analyze sentiment when form is submitted
     @PostMapping("/analyze")
     public String analyze(@RequestParam("text") String text, Model model){
+
+        addSharedModelAttributes(model);
 
         if (text == null || text.isBlank()) {
             model.addAttribute("error", "Please enter some text to analyze.");
@@ -83,6 +96,7 @@ public class SentimentController {
         model.addAttribute("sentiment", result.getSentiment());
         model.addAttribute("score", result.getScore());
         model.addAttribute("emoji", emoji);
+        model.addAttribute("confidenceText", Math.round(result.getConfidence() * 100) + "%");
         model.addAttribute("history", history);
         model.addAttribute("currentText", text);
 
@@ -99,7 +113,8 @@ public class SentimentController {
             return Map.of(
                 "sentiment", "Neutral",
                 "score", "2",
-                "emoji", "😐"
+                "emoji", "😐",
+                "confidenceText", "0%"
             );
         }
 
@@ -115,7 +130,8 @@ public class SentimentController {
         return Map.of(
             "sentiment", result.getSentiment(),
             "score", String.valueOf(result.getScore()),
-            "emoji", emoji
+            "emoji", emoji,
+            "confidenceText", Math.round(result.getConfidence() * 100) + "%"
         );
     }
 

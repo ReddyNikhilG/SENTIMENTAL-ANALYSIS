@@ -1,157 +1,70 @@
-# Sentiment Analysis Web Application
+# Sentiment Analysis App
 
-## 📌 Project Overview
+## Project Overview
 
-This project is a **Sentiment Analysis Web Application** built using **Java Spring Boot**.
-The system analyzes the sentiment of user-provided text and classifies it into **Positive, Negative, or Neutral** sentiment.
+This repository now includes a **Streamlit** application for sentiment analysis. The app accepts user text, classifies it as **Positive, Negative, or Neutral**, shows a 0-4 score, confidence, emoji feedback, analysis history, charts, and CSV export.
 
-Sentiment analysis is a Natural Language Processing (NLP) technique used to determine the emotional tone behind a piece of text. It is widely used to analyze opinions, reviews, and social media comments. ([ResearchGate][1])
+The Streamlit version uses a lightweight local sentiment engine so it is easier to run and deploy on Streamlit Cloud.
 
-This application provides a **simple web interface** where users can enter text and instantly view the predicted sentiment.
+## Features
 
----
+- Text sentiment classification
+- Streamlit web UI
+- Live sentiment summary after analysis
+- Session-based history tracking
+- Score, confidence, and emoji output
+- Sentiment score chart and keyword focus view
+- CSV download for recent analyses
 
-## 🚀 Features
+## Technologies Used
 
-* Text sentiment classification
-* Web-based user interface
-* Real-time sentiment prediction
-* Simple and clean UI
-* REST controller using Spring Boot
-* Lightweight and easy to run locally
+- Python
+- Streamlit
+- pandas
+- Altair
+- vaderSentiment
 
----
+## Project Structure
 
-## 🛠️ Technologies Used
-
-### Backend
-
-* Java
-* Spring Boot
-* Maven
-
-### Frontend
-
-* HTML
-* CSS
-* Thymeleaf
-
-### Tools
-
-* Git
-* GitHub
-* Visual Studio Code
-* IntelliJ IDEA (optional)
-
----
-
-## 📂 Project Structure
-
-```
+```text
 SENTIMENTAL-ANALYSIS
-│
-├── src
-│   └── main
-│       ├── java
-│       │   └── devxplaining.sentimentanalysis
-│       │       ├── App.java
-│       │       ├── SentimentController.java
-│       │       ├── SentimentService.java
-│       │       └── SentimentResult.java
-│       │
-│       └── resources
-│           ├── templates
-│           │   └── index.html
-│           └── static
-│               └── css
-│                   └── style.css
-│
-├── pom.xml
+├── app.py
+├── requirements.txt
+├── .streamlit/
+│   └── config.toml
+├── src/
+│   └── main/
+│       └── java/
+│           └── devxplaining/sentimentanalysis/
+│               └── ... original Spring Boot sources
 └── README.md
 ```
 
----
+## Run Locally
 
-## ⚙️ Installation and Setup
-
-### 1️⃣ Clone the Repository
+1. Create or activate the virtual environment.
+2. Install dependencies:
 
 ```bash
-git clone https://github.com/ReddyNikhilG/SENTIMENTAL-ANALYSIS.git
+pip install -r requirements.txt
 ```
 
-### 2️⃣ Navigate to the Project Folder
+3. Start the app:
 
-```
-cd SENTIMENTAL-ANALYSIS
-```
-
-### 3️⃣ Run the Spring Boot Application
-
-Using Maven:
-
-```
-mvn spring-boot:run
+```bash
+streamlit run app.py
 ```
 
-Or run the **App.java** file directly from your IDE.
+Then open the local URL shown by Streamlit.
 
----
+## Deploy to Streamlit Cloud
 
-## 🌐 Access the Application
+1. Push this repository to GitHub.
+2. Create a new app in Streamlit Cloud.
+3. Set the main file path to `app.py`.
+4. Keep `requirements.txt` in the repository root.
 
-Once the server starts, open your browser and go to:
+## Notes
 
-```
-https://sentimental-analysis-r4br.onrender.com
-```
-
-Enter a sentence and the system will predict the sentiment.
-
----
-
-## 📊 Example
-
-Input:
-
-```
-I love this product!
-```
-
-Output:
-
-```
-Sentiment: Positive
-```
-
----
-
-## 🎯 Use Cases
-
-Sentiment analysis applications include:
-
-* Customer feedback analysis
-* Product review monitoring
-* Social media opinion analysis
-* Brand reputation tracking
-
-Organizations use sentiment analysis to analyze large volumes of user-generated text and understand public opinion. ([ResearchGate][1])
-
----
-
-## 👨‍💻 Author
-
-**Reddy Nikhil**
-
-B.Tech Computer Science (AI & ML) Student
-
-GitHub:
-https://github.com/ReddyNikhilG
-
----
-
-## 📜 License
-
-This project is for **educational and learning purposes**.
-
-[1]: https://www.researchgate.net/publication/392538982_Review_of_sentiment_analysis_in_social_media_using_big_data_data_techniques_tools_and_frameworks?utm_source=chatgpt.com "Review of sentiment analysis in social media using big ..."
+- History is stored in the current Streamlit session only.
+- The original Java Spring Boot source remains in the repository, but the Streamlit app is now the primary runnable interface.
